@@ -17,14 +17,15 @@ from datasets.msra_hand import MARAHandDataset
 # Note,
 # Run in project root direcotry(ROOT_DIR) with:
 # PYTHONPATH=./ python experiments/msra-subject3/main.py
-# 
+#
 # This script will train model on MSRA hand datasets, save checkpoints to ROOT_DIR/checkpoint,
 # and save test results(test_res.txt) and fit results(fit_res.txt) to ROOT_DIR.
 #
 
 
+
 #######################################################################################
-## Some helpers
+# # Some helpers
 def parse_args():
     parser = argparse.ArgumentParser(description='PyTorch Hand Keypoints Estimation Training')
     #parser.add_argument('--resume', 'r', action='store_true', help='resume from checkpoint')
@@ -32,9 +33,8 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
 #######################################################################################
-## Configurations
+# # Configurations
 print('Warning: disable cudnn for batchnorm first, or just use only cuda instead!')
 
 # When we need to resume training, enable randomness to avoid seeing the determinstic
@@ -58,15 +58,15 @@ checkpoint_dir = r'./checkpoint'
 start_epoch = 0
 epochs_num = 15
 
-batch_size = 12
+batch_size = 6
 
 
 #######################################################################################
-## Data, transform, dataset and loader
+# # Data, transform, dataset and loader
 # Data
 print('==> Preparing data ..')
-data_dir = r'/home/maiqi/yalong/dataset/cvpr15_MSRAHandGestureDB'
-center_dir = r'/home/maiqi/yalong/project/KeyPoint/Code/V2V-PoseNet-Rlease-Codes/V2V-PoseNet_RELEASE-hand/data-result/MSRA-result/center'
+data_dir = r'//V2V-PoseNet/V2V-PoseNet-pytorch/datasets/msra_hand_data/'
+center_dir = r'/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/msra_center'
 keypoints_num = 21
 test_subject_id = 3
 cubic_size = 200
@@ -103,7 +103,7 @@ val_loader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle
 
 
 #######################################################################################
-## Model, criterion and optimizer
+# # Model, criterion and optimizer
 print('==> Constructing model ..')
 net = V2VModel(input_channels=1, output_channels=keypoints_num)
 
@@ -120,7 +120,7 @@ optimizer = optim.Adam(net.parameters())
 
 
 #######################################################################################
-## Resume
+# # Resume
 if resume_train:
     # Load checkpoint
     epoch = resume_after_epoch
@@ -137,7 +137,7 @@ if resume_train:
 
 
 #######################################################################################
-## Train and Validate
+# # Train and Validate
 print('==> Training ..')
 for epoch in range(start_epoch, start_epoch + epochs_num):
     print('Epoch: {}'.format(epoch))
@@ -156,7 +156,7 @@ for epoch in range(start_epoch, start_epoch + epochs_num):
 
 
 #######################################################################################
-## Test
+# # Test
 print('==> Testing ..')
 voxelize_input = voxelization_train.voxelize
 evaluate_keypoints = voxelization_train.evaluate
