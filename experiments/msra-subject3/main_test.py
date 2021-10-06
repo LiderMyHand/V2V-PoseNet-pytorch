@@ -1,8 +1,12 @@
 """
-## This script is for run tesing and test MSRA dataset
+## This script is for run only test MSRA dataset
 """
 
 # %matplotlib inline
+
+""
+import numpy as np
+import torch
 
 ""
 import numpy as np
@@ -18,6 +22,18 @@ from lib.sampler import ChunkSampler
 from src.v2v_model import V2VModel
 from src.v2v_util import V2VVoxelization
 from datasets.msra_hand import MARAHandDataset
+
+
+#######################################################################################
+# Note,
+# Run in project root direcotry(ROOT_DIR) with:
+# PYTHONPATH=./ python experiments/msra-subject3/main.py
+#
+# This script will train model on MSRA hand datasets, save checkpoints to ROOT_DIR/checkpoint,
+# and save test results(test_res.txt) and fit results(fit_res.txt) to ROOT_DIR.
+#
+
+checkpoint_dir = r'./checkpoint'
 
 
 #######################################################################################
@@ -98,9 +114,6 @@ val_set = MARAHandDataset(data_dir, center_dir, 'test', test_subject_id, transfo
 val_loader = torch.utils.data.DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=6)
 
 
-""
-train_set
-
 #######################################################################################
 # # Model, criterion and optimizer
 print('==> Constructing model ..')
@@ -118,40 +131,53 @@ optimizer = optim.Adam(net.parameters())
 #optimizer = optim.RMSprop(net.parameters(), lr=2.5e-4)
 
 
-#######################################################################################
-# # Resume
-if resume_train:
-    # Load checkpoint
-    epoch = resume_after_epoch
-    checkpoint_file = os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth')
+""
+# Resume
+# if resume_train:
+print('nannana')
 
-    print('==> Resuming from checkpoint after epoch {} ..'.format(epoch))
-    assert os.path.isdir(checkpoint_dir), 'Error: no checkpoint directory found!'
-    assert os.path.isfile(checkpoint_file), 'Error: no checkpoint file of epoch {}'.format(epoch)
+# Load checkpoint
+# epoch = resume_after_epoch
+# checkpoint_file = os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth')
 
-    checkpoint = torch.load(os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth'))
-    net.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    start_epoch = checkpoint['epoch'] + 1
+# print('==> Resuming from checkpoint after epoch {} ..'.format(epoch))
+# assert os.path.isdir(checkpoint_dir), 'Error: no checkpoint directory found!'
+# assert os.path.isfile(checkpoint_file), 'Error: no checkpoint file of epoch {}'.format(epoch)
+
+# checkpoint = torch.load(os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth'))
+print(checkpoint_dir)
+checkpoint=torch.load('/V2V-PoseNet/V2V-PoseNet-pytorch/checkpoint/epoch14.pth')
+net.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+# start_epoch = checkpoint['epoch'] + 1
 
 
-#######################################################################################
+
+""
+# a=torch.load('/V2V-PoseNet/V2V-PoseNet-pytorch/checkpoint/epoch14.pth')
+# a.keys()
+
+""
+# # ls '/V2V-PoseNet/V2V-PoseNet-pytorch/checkpoint/epoch14.pth'
+
+""
 # # Train and Validate
-print('==> Training ..')
-for epoch in range(start_epoch, start_epoch + epochs_num):
-    print('Epoch: {}'.format(epoch))
-    train_epoch(net, criterion, optimizer, train_loader, device=device, dtype=dtype)
-    val_epoch(net, criterion, val_loader, device=device, dtype=dtype)
+# print('==> Training ..')
+# for epoch in range(start_epoch, start_epoch + epochs_num):
+#     print('Epoch: {}'.format(epoch))
+#     train_epoch(net, criterion, optimizer, train_loader, device=device, dtype=dtype)
+#     val_epoch(net, criterion, val_loader, device=device, dtype=dtype)
 
-    if save_checkpoint and epoch % checkpoint_per_epochs == 0:
-        if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
-        checkpoint_file = os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth')
-        checkpoint = {
-            'model_state_dict': net.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'epoch': epoch
-        }
-        torch.save(checkpoint, checkpoint_file)
+""
+# #     if save_checkpoint and epoch % checkpoint_per_epochs == 0:
+# #         if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
+# checkpoint_file = os.path.join(checkpoint_dir, 'epoch'+str(epoch)+'.pth')
+# checkpoint = {
+#     'model_state_dict': net.state_dict(),
+#     'optimizer_state_dict': optimizer.state_dict(),
+#     'epoch': epoch
+#         }
+# #         torch.save(checkpoint, checkpoint_file)
 
 
 #######################################################################################
@@ -214,17 +240,13 @@ keypoints_test = test_res_collector.get_result()
 save_keypoints('./test_res.txt', keypoints_test)
 
 
-print('Fit on train dataset ..')
-fit_set = MARAHandDataset(data_dir, center_dir, 'train', test_subject_id, transform_test)
-fit_loader = torch.utils.data.DataLoader(fit_set, batch_size=batch_size, shuffle=False, num_workers=6)
-fit_res_collector = BatchResultCollector(len(fit_set), transform_output)
+# print('Fit on train dataset ..')
+# fit_set = MARAHandDataset(data_dir, center_dir, 'train', test_subject_id, transform_test)
+# fit_loader = torch.utils.data.DataLoader(fit_set, batch_size=batch_size, shuffle=False, num_workers=6)
+# fit_res_collector = BatchResultCollector(len(fit_set), transform_output)
 
-test_epoch(net, fit_loader, fit_res_collector, device, dtype)
-keypoints_fit = fit_res_collector.get_result()
-save_keypoints('./fit_res.txt', keypoints_fit)
+# test_epoch(net, fit_loader, fit_res_collector, device, dtype)
+# keypoints_fit = fit_res_collector.get_result()
+# save_keypoints('./fit_res.txt', keypoints_fit)
 
 print('All done ..')
-
-""
-test_set = MARAHandDataset(data_dir, center_dir, 'test', test_subject_id, transform_test)
-

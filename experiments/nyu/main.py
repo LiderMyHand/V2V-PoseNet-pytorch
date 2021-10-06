@@ -1,3 +1,10 @@
+"""
+## This script is used for testing the NYU hand dataset
+"""
+
+# %matplotlib inline
+
+""
 import numpy as np
 import torch
 import torch.nn as nn
@@ -195,42 +202,5 @@ save_keypoints('./test_res.txt', keypoints_test)
 
 print('All done ..')
 
-###############################################################################
-# ls '/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/test_bin/depth_1_0000001.bin'
-
-###############################################################################
-# import os
-
-###############################################################################
-# for count, filename in enumerate(os.listdir('/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/test_bin/depth_1_0000001.bin')):
-#     print(type(filename))
-# #         dst ="Hostel" + str(count) + ".jpg"
-# #         src ='xyz'+ filename
-# #         dst ='xyz'+ dst
-#           
-# #         # rename() function will
-# #         # rename all the files
-# #         os.rename(src, dst)
-
 ""
-
-
-
-###############################################################################
-# ls '/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/test_bin'
-
-###############################################################################
-# pwd
-
-###############################################################################
-# for count, filename in enumerate(os.listdir('test_bin')):
-#     print(type(filename))
-# #         dst ="Hostel" + str(count) + ".jpg"
-#     src = filename
-#     dst = str(count) + '.bin'
-#           
-# #         # rename() function will
-# #         # rename all the files
-#     os.rename('/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/test_bin/{}'.format(src), '/V2V-PoseNet/V2V-PoseNet-pytorch/datasets/test_bin/{}'.format(dst))
-
 
