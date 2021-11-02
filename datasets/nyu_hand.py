@@ -4,6 +4,7 @@ import numpy as np
 import sys
 import struct
 from torch.utils.data import Dataset
+import scipy.io as scio
 
 
 def pixel2world(x, y, z, img_width, img_height, fx, fy):
@@ -48,7 +49,7 @@ def load_depthmap(filename, img_width, img_height, max_depth):
 
 
 class NYUDataset(Dataset):
-    def __init__(self, root, center_dir, mode,  transform=None):
+    def __init__(self, root, center_dir, transform=None):
         self.img_width = 640
         self.img_height = 480
         self.max_depth = 1200
@@ -58,7 +59,6 @@ class NYUDataset(Dataset):
         self.world_dim = 3
         self.root = root
         self.center_dir = center_dir
-        self.mode = mode
         self.transform = transform
    
         self._load()
@@ -87,7 +87,7 @@ class NYUDataset(Dataset):
         self.ref_pts = np.zeros((self.num_samples, self.world_dim))
         self.names = []
 
-        ref_pt_file = 'test_center_uvd.txt'
+        ref_pt_file = 'center_test_refined.txt'
 
         with open(os.path.join(self.center_dir, ref_pt_file)) as f:
                 ref_pt_str = [l.rstrip() for l in f]
@@ -113,4 +113,83 @@ class NYUDataset(Dataset):
 
             frame_id += 1
             file_id += 1
+
+
+class NYUDataset_train(Dataset):
+    def __init__(self, root, center_dir, transform=None):
+        self.img_width = 640
+        self.img_height = 480
+        self.max_depth = 1200
+        self.fx = 588.03
+        self.fy = 587.07
+        self.joint_num = 21
+        self.world_dim = 3
+        self.root = root
+        self.center_dir = center_dir
+        self.transform = transform
+   
+        self._load()
+    
+    def __getitem__(self, index):
+        depthmap_img = load_depthmap(self.names[index], self.img_width, self.img_height, self.max_depth)
+        points = depthmap2points(depthmap_img, self.fx, self.fy)
+        points = points.reshape((-1, 3))
+        sample = {
+            'name': self.names[index],
+            'points': points,
+            'joints': self.joints_world[index],
+            'refpoint': self.ref_pts[index]
+        }
+
+        if self.transform: sample = self.transform(sample)
+
+        return sample
+    
+    def __len__(self):
+        return self.num_samples
+
+    def _load(self):
+
+        self.num_samples = 72757
+        self.ref_pts = np.zeros((self.num_samples, self.world_dim))
+        self.joints_world = np.zeros((self.num_samples, self.joint_num, self.world_dim))
+        self.names = []
+        keypoint_file =  self.root + 'joint_data.mat'
+        ref_pt_file = 'center_train_refined.txt'
+
+        with open(os.path.join(self.center_dir, ref_pt_file)) as f:
+                ref_pt_str = [l.rstrip() for l in f]
+                
+        keypointsXYZ_test = scio.loadmat(keypoint_file)["joint_xyz"].astype(np.float32)[0]
+        EVAL_JOINTS = np.array([
+                                0, 6, 12, 18, 24,
+                                1, 7, 13, 19, 25,
+                                4, 10, 15, 21, 26,
+                                5, 11, 17, 23, 28,
+                                29 ])
+        
+        keypointsXYZ_test = keypointsXYZ_test[::][:,EVAL_JOINTS,:]
+        file_id = 0
+        frame_id = 0
+
+        for i in range(0, 72757):
+            # referece point
+            splitted = ref_pt_str[file_id].split()
+            if splitted[0] == 'invalid':
+                print('Warning: found invalid reference frame')
+                file_id += 1
+                continue
+            else:
+                self.ref_pts[frame_id, 0] = float(splitted[0])
+                self.ref_pts[frame_id, 1] = float(splitted[1])
+                self.ref_pts[frame_id, 2] = float(splitted[2])
+                
+            self.joints_world[i] = keypointsXYZ_test[i]
+            filename = os.path.join(self.root, 'depth_1_{:0>7d}.bin'.format(i+1))
+            self.names.append(filename)
+            
+            frame_id += 1
+            file_id += 1
+
+
 
